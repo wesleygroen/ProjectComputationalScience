@@ -71,7 +71,7 @@ def position_update_one_car(car_pi, car_posses, cars, road):
     # if speed is zero, car doesn't move
     if speed == 0:
         return cars, road
-    neighbors = car_positions(road[car_pos:car_pos+speed])
+    neighbors = car_positions(road[car_pos:car_pos + speed + 2])
     # consider edge case when the updating the last car in the array,
     # it can dissapear off the edge when position+speed > len(array)
     if car_pi == len(car_posses)-1:
@@ -127,9 +127,8 @@ def position_update_one_car(car_pi, car_posses, cars, road):
 
 # update position of all cars
 def position_update(car_posses, cars, road):
-    for cp in car_posses:
-        cars, road = position_update_one_car(car_pi=cp, car_posses=car_posses,
-                                             cars=cars, road=road)
+    for i in range(len(car_posses)):
+        cars, road = position_update_one_car(i, car_posses, cars, road)
     return road
 
 
