@@ -47,12 +47,20 @@ def car_positions(road):
 # the speed is a function of the gap size
 # simplest model: accelerate to speed = gap_size
 def speed_update_one_car(car_pi, car_positions, cars, road, Vmax=6):
-    distance = car_positions[car_pi+1] - car_positions[car_pi] - 2
     i = road[car_positions[car_pi]]
+    distance = car_positions[car_pi+1] - car_positions[car_pi] - 2
     if distance >= Vmax:
         cars[i] = Vmax
     else:
         cars[i] = distance
+    return cars
+
+
+def speed_update(car_positions, cars, road, Vmax=6):
+    l = len(car_positions)
+    for i in range(l-1):
+        cars = speed_update_one_car(i, car_positions, cars, road, Vmax)
+    cars[l]=Vmax
     return cars
 
 
