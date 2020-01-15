@@ -47,7 +47,7 @@ def car_positions(road):
 # the speed is a function of the gap size
 # simplest model: accelerate to speed = gap_size
 def speed_update_one_car(car_pi, car_positions,
-                 cars, road, Vmax=6):
+                         cars, road, Vmax=6):
     distance = car_positions[car_pi+1] - car_positions[car_pi] - 2
     i = road[car_positions[car_pi]]
     if distance >= Vmax:
@@ -58,14 +58,14 @@ def speed_update_one_car(car_pi, car_positions,
 
 
 # update position of a single car given:
-# 1) it's index into the car positions array    
-# 2) the car positions array, array of indexes that say's where each car is on the road
-#     the array is ordered such that consecutive elements correspond with consecutive cars.
-#     F.e. element 0 can correspond with car 1, element 1 with car 2 and so on.
+# 1) it's index into the car positions array
+# 2) the car positions array, array of indexes that say's where each car is on
+#     the road the array is ordered such that consecutive elements correspond
+#     with consecutive cars. F.e. element 0 can correspond with car 1,
+#     element 1 with car 2 and so on.
 # 3) the cars dictionairy
 # 4) road array
-def position_update_one_car(car_pi, car_posses,
-                    cars, road):
+def position_update_one_car(car_pi, car_posses, cars, road):
     print(car_posses)
     print(car_pi)
     print('--------')
@@ -73,85 +73,83 @@ def position_update_one_car(car_pi, car_posses,
     i = road[car_pos]
     speed = cars[i]
     # if speed is zero, car doesn't move
-    if speed==0:
+    if speed == 0:
         return road
     print('speed = ', speed)
     print('car ', i)
-    print('road segment = ', 
-          road[car_pos:car_pos+speed])
+    print('road segment = ', road[car_pos:car_pos+speed])
     neighbors = car_positions(road[car_pos:car_pos+speed])
-    print('neighbor indices = ',
-          neighbors)
+    print('neighbor indices = ', neighbors)
     print('-----')
     # consider edge case when the updating the last car in the array,
     # it can dissapear off the edge when position+speed > len(array)
     if car_pi == len(car_posses)-1:
         # delete car if it disappears of the road
         if car_pos+speed > road.size-1:
-            road[car_pos]=0
+            road[car_pos] = 0
             del cars[i]
             # only return the updated car dict if a car is deleted
             return cars, road
         # otherwise, the car can get up to the exact last block
         else:
-            road[car_pos+speed]=road[car_pos]
-            road[car_pos]=0
-            return road          
+            road[car_pos+speed] = road[car_pos]
+            road[car_pos] = 0
+            return road
     # if not last car, update the position as normal
-    # if there is only one neighbor (i.e. itself), the road 
+    # if there is only one neighbor (i.e. itself), the road
     # is clear to move at it's current speed
-    if neighbors.size==1:
+    if neighbors.size == 1:
         road[car_pos + speed] = road[car_pos]
-        road[car_pos]=0
+        road[car_pos] = 0
         return road
-    # otherwise, move as close to the closest leader car 
+    # otherwise, move as close to the closest leader car
     # as possible and adjust speed to this leader
     else:
         # dnn is relative distance to the first leader
         dnn = neighbors[1]
-        print('distance to leader=',dnn)
-        # if the relative distance is exactly 2, it means the 
+        print('distance to leader=', dnn)
+        # if the relative distance is exactly 2, it means the
         # car is already driving as close as it wants to,
         # and it can't move closer
         if dnn == 2:
             print('no change')
             return road
-        # otherwise, the speed would result in a movement that 
+        # otherwise, the speed would result in a movement that
         # is larger than the gap between itself and it's nearest
         # leader
         else:
             # minimum gap is defined as it's distance to the nearest leader
-            # minus two, since there should always be one block between cars = 
+            # minus two, since there should always be one block between cars =
             # distance of 2
             min_gap = dnn-2
-            # if the speed is larger than this gap, is should simpy move 
+            # if the speed is larger than this gap, is should simpy move
             # as close as possible, i.e. this exact gap size, so it's
             # new position is within one block of it's nearest leader
             if speed > min_gap:
                 road[car_pos + min_gap] = road[car_pos]
-                road[car_pos]=0
+                road[car_pos] = 0
                 print('speed = min gap')
             # otherwise, there is a large enough gap given the current speed
             # to move and it simply updates the position using this speed
             else:
                 road[car_pos + speed] = road[car_pos]
-                road[car_pos]=0
+                road[car_pos] = 0
                 print('speed = speed')
         return road
 
 
-# update position of all cars 
+# update position of all cars
 def position_update(car_posses, cars, road):
     for cp in car_posses:
         print('CP ', cp)
         road = position_update_one_car(car_pi=cp, car_posses=car_posses,
-                                        cars=cars, road=road)
+                                       cars=cars, road=road)
         print(road)
     return road
 
 
-# Generate a new car randomly if the 
-# first position of the road is free. 
+# Generate a new car randomly if the
+# first position of the road is free.
 # always returns the car and road array
 def generate_new_cars(cars, road, p_gen=1,
                       speed_random=False, Vmax=6):
@@ -161,10 +159,10 @@ def generate_new_cars(cars, road, p_gen=1,
         road[0] = new_car
         print('new car ', new_car)
         # if speed randomization is false, set speed to Vmax
-        if speed_random==False:
+        if !speed_random:
             cars[new_car] = Vmax
         else:
             # choose random speed uniformly
             cars[new_car] = random_speed()
             print('random speed')
-    return cars, road   
+    return cars, road
