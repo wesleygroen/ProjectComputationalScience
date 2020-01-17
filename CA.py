@@ -58,7 +58,7 @@ def speed_update_one_car(car_pi, car_positions, cars, road, Vmax=6):
 
 def speed_update(car_positions, cars, road, Vmax=6):
     l = len(car_positions)
-    for cp in range(l-2):
+    for cp in range(l-1):
         cars = speed_update_one_car(cp, car_positions, cars, road, Vmax)
     cars[l]=Vmax
     return cars
@@ -79,19 +79,19 @@ def position_update_one_car(car_pi, car_posses, cars, road):
     # if speed is zero, car doesn't move
     if speed == 0:
         return cars, road
-    neighbors = car_positions(road[car_pos:car_pos + speed + 2])
+    neighbors = car_positions(road[car_pos : car_pos + speed + 2])  
     # consider edge case when the updating the last car in the array,
     # it can dissapear off the edge when position+speed > len(array)
     if car_pi == len(car_posses)-1:
         # delete car if it disappears of the road
-        if car_pos+speed > road.size-1:
+        if car_pos + speed > road.size - 1:
             road[car_pos] = 0
             del cars[i]
             # only return the updated car dict if a car is deleted
             return cars, road
         # otherwise, the car can get up to the exact last block
         else:
-            road[car_pos+speed] = road[car_pos]
+            road[car_pos + speed] = road[car_pos]
             road[car_pos] = 0
             return cars, road
     # if not last car, update the position as normal
