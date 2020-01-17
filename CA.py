@@ -58,8 +58,10 @@ def speed_update_one_car(car_pi, car_positions, cars, road, Vmax=6):
 
 def speed_update(car_positions, cars, road, Vmax=6):
     l = len(car_positions)
-    for i in range(l-1):
-        cars = speed_update_one_car(i, car_positions, cars, road, Vmax)
+    car_pi=1
+    for _ in range(l-2):
+        cars = speed_update_one_car(car_pi, car_positions, cars, road, Vmax)
+        car_pi+=1
     cars[l]=Vmax
     return cars
 
@@ -137,7 +139,7 @@ def position_update_one_car(car_pi, car_posses, cars, road):
 def position_update(car_posses, cars, road):
     for i in range(len(car_posses)):
         cars, road = position_update_one_car(i, car_posses, cars, road)
-    return road
+    return cars, road
 
 
 # Generate a new car randomly if the
@@ -148,7 +150,7 @@ def generate_new_cars(cars, road, p_gen=1, speed_random=False, Vmax=6):
         # give the new key a new label
         new_car = max(cars.keys())+1
         road[0] = new_car
-        print('new car ', new_car)
+        # print('new car ', new_car)
         # if speed randomization is false, set speed to Vmax
         if not speed_random:
             cars[new_car] = Vmax
