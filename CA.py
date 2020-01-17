@@ -58,10 +58,8 @@ def speed_update_one_car(car_pi, car_positions, cars, road, Vmax=6):
 
 def speed_update(car_positions, cars, road, Vmax=6):
     l = len(car_positions)
-    car_pi=1
-    for _ in range(l-2):
-        cars = speed_update_one_car(car_pi, car_positions, cars, road, Vmax)
-        car_pi+=1
+    for cp in range(l-2):
+        cars = speed_update_one_car(cp, car_positions, cars, road, Vmax)
     cars[l]=Vmax
     return cars
 
