@@ -60,7 +60,7 @@ def speed_update(car_positions, cars, road, Vmax=6):
     l = len(car_positions)
     for cp in range(l-1):
         cars = speed_update_one_car(cp, car_positions, cars, road, Vmax)
-    cars[l]=Vmax
+    cars[l] = Vmax
     return cars
 
 
@@ -79,7 +79,7 @@ def position_update_one_car(car_pi, car_posses, cars, road):
     # if speed is zero, car doesn't move
     if speed == 0:
         return cars, road
-    neighbors = car_positions(road[car_pos : car_pos + speed + 2])  
+    neighbors = car_positions(road[car_pos: car_pos + speed + 2])
     # consider edge case when the updating the last car in the array,
     # it can dissapear off the edge when position+speed > len(array)
     if car_pi == len(car_posses)-1:
@@ -158,43 +158,42 @@ def generate_new_cars(cars, road, p_gen=1, speed_random=False, Vmax=6):
     return cars, road
 
 
-
-def main_loop(P_init, iterations=10, road_len=int(1e4), 
+def main_loop(P_init, iterations=10, road_len=int(1e4),
               Vmax=6, Vrandom=True, p_gen=0.3,
               reaction_time=1):
-    
+
     # make the initial road and cars
     cars, road = random_init_cars(road_len, P_init,
                                   Vrandom,
                                   Vmax)
     # make initial car positions
     positions = car_positions(road)
-    
+
     # run the main experiment loop
-    if reaction_time!=0:
+    if reaction_time != 0:
         for i in range(iterations):
             # update the position using current speed
             cars, road = position_update(positions, cars, road)
 
             # generate randomly new cars at the beginning of the road
-            #cars, road = generate_new_cars(cars, road, p_gen=0.5, speed_random=False, Vmax=6)
+            # cars, road = generate_new_cars(cars, road, p_gen=0.5,
+            # speed_random=False, Vmax=6)
 
             # get the new car positions from the new array
             positions = car_positions(road)
 
-            # Update the speed based on the new position when i is equal to 
-            # an exact multiple of the reaction time, this has the effect of 
+            # Update the speed based on the new position when i is equal to
+            # an exact multiple of the reaction time, this has the effect of
             # delaying each speed update with 1 reaction time.
 
-            if i%reaction_time==0:
+            if i % reaction_time == 0:
                 cars = speed_update(positions, cars, road, Vmax)
-            
+
     # if reaction time is zero, do the basic loop without reaction time
     # (slight code redundancy, but avoids unnecessary checks inside the loop)
-    if reaction_time==0:
+    if reaction_time == 0:
         for i in range(iterations):
-            cars,road=position_update(positions, cars, road)
-            positions=car_positions(road)
-            cars=speed_update(positions, cars, road, Vmax)
-
-    return cars, road    
+            cars, road = position_update(positions, cars, road)
+            positions = car_positions(road)
+            cars = speed_update(positions, cars, road, Vmax)
+    return cars, road
