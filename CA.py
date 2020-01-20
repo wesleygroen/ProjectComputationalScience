@@ -4,8 +4,8 @@ from collections import defaultdict
 
 
 # return a random speed between 0 and 6 blocks per time step
-def random_speed():
-    return random.choice([0, 1, 2, 3, 4, 5, 6])
+def random_speed(Vmax=6):
+    return random.choice(range(Vmax))
 
 
 # populate the road with P_init density random cars
@@ -20,7 +20,7 @@ def random_init_cars(road_len, P_init, speed_random=False, Vmax=6):
         while x < road_len:
             if np.random.rand() <= P_init:
                 # choose random speed uniformly in {0,6} range
-                cars[i] = random_speed()
+                cars[i] = random_speed(Vmax)
                 road[x] = i
                 x += 2
                 i += 1
@@ -154,7 +154,7 @@ def generate_new_cars(cars, road, p_gen=1, speed_random=False, Vmax=6):
             cars[new_car] = Vmax
         else:
             # choose random speed uniformly
-            cars[new_car] = random_speed()
+            cars[new_car] = random_speed(Vmax)
     return cars, road
 
 
