@@ -4,7 +4,6 @@ import config
 from collections import defaultdict
 
 
-
 # return a random speed between 0 and 6 blocks per time step
 def random_speed(Vmax=6):
     return random.choice(range(Vmax))
@@ -91,7 +90,8 @@ def position_update_one_car(car_pi, car_posses, cars, road):
         # delete car if it disappears of the road
         if car_pos + speed > road.size - 1:
             road[car_pos] = 0
-            # if a car gets deleted, we increment the global counter with 1 to track the flow
+            # if a car gets deleted, we increment the global counter with 1 to
+            # track the flow
             config.flow_counter += 1
             del cars[i]
             # only return the updated car dict if a car is deleted
@@ -177,6 +177,8 @@ def main_loop(P_init, iterations=10, road_len=int(1e4),
     # make initial car positions
     positions = car_positions(road)
 
+    config.plot_data = []
+    config.plot_data.append(np.copy(road))
     # run the main experiment loop
     if reaction_time != 0:
         for i in range(iterations):
@@ -185,11 +187,13 @@ def main_loop(P_init, iterations=10, road_len=int(1e4),
 
             # generate randomly new cars at the beginning of the road
             cars, road = generate_new_cars(cars, road, p_gen,
-                                            Vrandom, Vmax)
+                                           Vrandom, Vmax)
+
+            config.plot_data.append(np.copy(road))
             # get the new car positions from the new array
             positions = car_positions(road)
 
-            if positions.size==0:
+            if positions.size == 0:
                 continue
 
             # Update the speed based on the new position when i is equal to
@@ -199,16 +203,25 @@ def main_loop(P_init, iterations=10, road_len=int(1e4),
             if i % reaction_time == 0:
                 cars = speed_update(positions, cars, road, Vmax)
 
-
     # if reaction time is zero, do the basic loop without reaction time
     # (slight code redundancy, but avoids unnecessary checks inside the loop)
     if reaction_time == 0:
         for i in range(iterations):
             cars, road = position_update(positions, cars, road)
             cars, road = generate_new_cars(cars, road, p_gen,
-                                            Vrandom, Vmax)
+                                           Vrandom, Vmax)
+            config.plot_data.append(np.copy(road))
             positions = car_positions(road)
-            if positions.size==0:
+            if positions.size == 0:
                 continue
             cars = speed_update(positions, cars, road, Vmax)
     return cars, road
+
+
+# quick plot of the road in every timestep
+def plot_traffic():
+    r1 = np.array([np.array(xi) for xi in config.plot_data])
+    r2 = np.where(r1>0, 1, r1)
+    plt.figure(figsize=(100,100))
+    plt.imshow(r2, cmap='binary', interpolation=None)
+    plt.show()
