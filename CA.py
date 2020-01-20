@@ -156,3 +156,45 @@ def generate_new_cars(cars, road, p_gen=1, speed_random=False, Vmax=6):
             # choose random speed uniformly
             cars[new_car] = random_speed()
     return cars, road
+
+
+
+def main_loop(P_init, iterations=10, road_len=int(1e4), 
+              Vmax=6, Vrandom=True, p_gen=0.3,
+              reaction_time=1):
+    
+    # make the initial road and cars
+    cars, road = random_init_cars(road_len, P_init,
+                                  Vrandom,
+                                  Vmax)
+    # make initial car positions
+    positions = car_positions(road)
+    
+    # run the main experiment loop
+    if reaction_time!=0:
+        for i in range(iterations):
+            # update the position using current speed
+            cars, road = position_update(positions, cars, road)
+
+            # generate randomly new cars at the beginning of the road
+            #cars, road = generate_new_cars(cars, road, p_gen=0.5, speed_random=False, Vmax=6)
+
+            # get the new car positions from the new array
+            positions = car_positions(road)
+
+            # Update the speed based on the new position when i is equal to 
+            # an exact multiple of the reaction time, this has the effect of 
+            # delaying each speed update with 1 reaction time.
+
+            if i%reaction_time==0:
+                cars = speed_update(positions, cars, road, Vmax)
+            
+    # if reaction time is zero, do the basic loop without reaction time
+    # (slight code redundancy, but avoids unnecessary checks inside the loop)
+    if reaction_time==0:
+        for i in range(iterations):
+            cars,road=position_update(positions, cars, road)
+            positions=car_positions(road)
+            cars=speed_update(positions, cars, road, Vmax)
+
+    return cars, road    
