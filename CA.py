@@ -1,6 +1,8 @@
 import numpy as np
 import random
+import config
 from collections import defaultdict
+
 
 
 # return a random speed between 0 and 6 blocks per time step
@@ -10,6 +12,7 @@ def random_speed(Vmax=6):
 
 # populate the road with P_init density random cars
 def random_init_cars(road_len, P_init, speed_random=False, Vmax=6):
+    config.flow_counter = 0
     cars = defaultdict(int)
     # zero indicates there is no car or a non-rear part of a car
     # is present
@@ -36,6 +39,8 @@ def random_init_cars(road_len, P_init, speed_random=False, Vmax=6):
                 i += 1
             else:
                 x += 1
+    # initial amount of cars
+    config.car_counter = len(cars)
     return cars, road
 
 
@@ -46,7 +51,7 @@ def car_positions(road):
 
 # the speed is a function of the gap size
 # simplest model: accelerate to speed = gap_size
-def speed_update_one_car(car_pi, car_positions, cars, road, Vmax=6):
+def speed_update_one_car(car_pi, car_positions, cars, road, Vmax):
     i = road[car_positions[car_pi]]
     distance = car_positions[car_pi+1] - car_positions[car_pi] - 2
     if distance >= Vmax:
@@ -56,11 +61,11 @@ def speed_update_one_car(car_pi, car_positions, cars, road, Vmax=6):
     return cars
 
 
-def speed_update(car_positions, cars, road, Vmax=6):
+def speed_update(car_positions, cars, road, Vmax):
     l = len(car_positions)
     for cp in range(l-1):
         cars = speed_update_one_car(cp, car_positions, cars, road, Vmax)
-    cars[l] = Vmax
+    cars[road[car_positions[l-1]]] = Vmax
     return cars
 
 
@@ -81,11 +86,13 @@ def position_update_one_car(car_pi, car_posses, cars, road):
         return cars, road
     neighbors = car_positions(road[car_pos: car_pos + speed + 2])
     # consider edge case when the updating the last car in the array,
-    # it can dissapear off the edge when position+speed > len(array)
+    # it can dissapear off the edge when position + speed > len(array)
     if car_pi == len(car_posses)-1:
         # delete car if it disappears of the road
         if car_pos + speed > road.size - 1:
             road[car_pos] = 0
+            # if a car gets deleted, we increment the global counter with 1 to track the flow
+            config.flow_counter += 1
             del cars[i]
             # only return the updated car dict if a car is deleted
             return cars, road
@@ -145,8 +152,9 @@ def position_update(car_posses, cars, road):
 # always returns the car and road array
 def generate_new_cars(cars, road, p_gen=1, speed_random=False, Vmax=6):
     if not road[0:2].any() and np.random.rand() <= p_gen:
+        config.car_counter += 1
         # give the new key a new label
-        new_car = max(cars.keys())+1
+        new_car = config.car_counter
         road[0] = new_car
         # print('new car ', new_car)
         # if speed randomization is false, set speed to Vmax
@@ -176,11 +184,13 @@ def main_loop(P_init, iterations=10, road_len=int(1e4),
             cars, road = position_update(positions, cars, road)
 
             # generate randomly new cars at the beginning of the road
-            # cars, road = generate_new_cars(cars, road, p_gen=0.5,
-            # speed_random=False, Vmax=6)
-
+            cars, road = generate_new_cars(cars, road, p_gen,
+                                            Vrandom, Vmax)
             # get the new car positions from the new array
             positions = car_positions(road)
+
+            if positions.size==0:
+                continue
 
             # Update the speed based on the new position when i is equal to
             # an exact multiple of the reaction time, this has the effect of
@@ -189,11 +199,16 @@ def main_loop(P_init, iterations=10, road_len=int(1e4),
             if i % reaction_time == 0:
                 cars = speed_update(positions, cars, road, Vmax)
 
+
     # if reaction time is zero, do the basic loop without reaction time
     # (slight code redundancy, but avoids unnecessary checks inside the loop)
     if reaction_time == 0:
         for i in range(iterations):
             cars, road = position_update(positions, cars, road)
+            cars, road = generate_new_cars(cars, road, p_gen,
+                                            Vrandom, Vmax)
             positions = car_positions(road)
+            if positions.size==0:
+                continue
             cars = speed_update(positions, cars, road, Vmax)
     return cars, road
