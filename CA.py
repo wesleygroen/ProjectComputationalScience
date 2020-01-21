@@ -203,6 +203,7 @@ def main_loop(P_init, iterations=10, road_len=int(1e4),
 
             if i % reaction_time == 0:
                 cars = speed_update(positions, cars, road, Vmax)
+            print(cars.values())
 
     # if reaction time is zero, do the basic loop without reaction time
     # (slight code redundancy, but avoids unnecessary checks inside the loop)
@@ -216,6 +217,7 @@ def main_loop(P_init, iterations=10, road_len=int(1e4),
             if positions.size == 0:
                 continue
             cars = speed_update(positions, cars, road, Vmax)
+
     return cars, road
 
 
