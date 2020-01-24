@@ -159,7 +159,7 @@ def speed_update(car_pos, cars, road):
     l = len(car_pos)
     for pos in range(l-1):
         cars = speed_update_one_car(pos, car_pos, cars, road)
-    if config.Vm_vary != 0 and i % config.Vm_vary == 0:
+    if config.Vm_vary != 0 and road[car_pos[l-1]] % config.Vm_vary == 0:
         Vmax = config.Vmax2
     else:
         Vmax = config.Vmax1
