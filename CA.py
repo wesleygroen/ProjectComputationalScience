@@ -4,23 +4,25 @@ import matplotlib.pyplot as plt
 import config
 from collections import defaultdict
 
+
 # return a random speed between 0 and 6 blocks per time step
 # used for initializing cars with random speeds
 def random_speed(Vmax=6):
     return random.choice(range(Vmax))
+
 
 # subroutine for the speed_randomizer function
 # this is not necessary, but to reduce numer of code lines
 # udpates the speed for one car
 def speed_randomizer_sub(cars, c, p, amount, alt_speed=False):
     # if alternative speed is off, use the config.Vmax1 to update car speed
-    if alt_speed==False:
-        if np.random.rand()<=0.5:
+    if not alt_speed:
+        if np.random.rand() <= 0.5:
             cars[c] += amount
-        else: 
+        else:
             cars[c] -= amount
-        # check if the speed doesn't go above or below the boundaries of Vmax and 0, 
-        # if it does, set it to Vmax or 0 
+        # check if the speed doesn't go above or below the boundaries of
+        # Vmax and 0, if it does, set it to Vmax or 0
         if cars[c] > config.Vmax1:
             cars[c] = config.Vmax1
         if cars[c] < 0:
@@ -28,43 +30,41 @@ def speed_randomizer_sub(cars, c, p, amount, alt_speed=False):
         return cars
     else:
         # if alternative speed is selected, use the config.Vmax2 speed instead
-        if np.random.rand()<=0.5:
+        if np.random.rand() <= 0.5:
             cars[c] += amount
-        else: 
+        else:
             cars[c] -= amount
-        # check if the speed doesn't go above or below the boundaries of Vmax and 0, 
-         # if it does, set it to Vmax or 0 
+        # check if the speed doesn't go above or below the boundaries of
+        # Vmax and 0, if it does, set it to Vmax or 0
         if cars[c] > config.Vmax2:
             cars[c] = config.Vmax2
         if cars[c] < 0:
             cars[c] = 0
         return cars
-        
+
 
 # function that adds noise to car velocity,
 # it can randomly change slightly modeling the idea of
 # driver cruise inconsistency
-#   cars = dict of car_label : speed, 
+#   cars = dict of car_label : speed,
 #   p = probability the speed will change each main_loop iteration
 #   amount = amount that the speed changes
 def speed_randomizer(cars, p=0.1, amount=1):
     # check for the varying Vmax setting
-    if config.Vm_vary!=0:
+    if config.Vm_vary != 0:
         for c in cars:
             # check for the slower Vmax
             if c % config.Vm_vary == 0:
                 speed_randomizer_sub(cars, c, p, amount, alt_speed=True)
-            # otherwise, continue routine as normal             
+            # otherwise, continue routine as normal
             else:
-                cars = speed_randomizer_sub(cars, c, p, amount, alt_speed=False) 
+                cars = speed_randomizer_sub(cars, c, p, amount,
+                                            alt_speed=False)
     # if Vm_vary is not used, simply update using the standard Vmax1
     else:
         for c in cars:
             cars = speed_randomizer_sub(cars, c, p, amount, alt_speed=False)
-    return cars                  
-                
-
-
+    return cars
 
 
 # populate the road with P_init density random cars
@@ -85,7 +85,7 @@ def random_init_cars(road_len, P_init, speed_random=False):
                     if i % config.Vm_vary == 0:
                         # slower Vmax
                         cars[i] = random_speed(config.Vmax2)
-                    else: 
+                    else:
                         # higher Vmax
                         cars[i] = random_speed(config.Vmax1)
                     road[x] = i
@@ -97,7 +97,7 @@ def random_init_cars(road_len, P_init, speed_random=False):
             while x < road_len:
                 if np.random.rand() <= P_init:
                     # if not random, start all cars at Vmax
-                    if i%config.Vm_vary==0:
+                    if i % config.Vm_vary == 0:
                         cars[i] = config.Vmax2
                     else:
                         cars[i] = config.Vmax1
@@ -255,28 +255,26 @@ def generate_new_cars(cars, road, p_gen=1, speed_random=False):
         # give the new key a new label
         new_car = config.car_counter
         road[0] = new_car
-        
+
         # if speed randomization is false, set speed to Vmax
         if not speed_random:
             # check if Vm_vary is activated
-            if config.Vm_vary!=0:
+            if config.Vm_vary != 0:
                 # slower Vmax case
-                if new_car%config.Vm_vary==0:
+                if new_car % config.Vm_vary == 0:
                     cars[new_car] = config.Vmax2
                 # fast Vmax case
                 else:
                     cars[new_car] = config.Vmax1
             # otherwise use default of Vmax1
             else:
-                cars[new_car] = config.Vmax1       
+                cars[new_car] = config.Vmax1
 
-
-            
         else:
             # choose random speed uniformly
             # again, check for Vm_vary
-            if config.Vm_vary!=0:
-                if new_car%config.Vm_vary==0:
+            if config.Vm_vary != 0:
+                if new_car % config.Vm_vary == 0:
                     # slow Vmax
                     cars[new_car] = random_speed(config.Vmax2)
                 else:
@@ -290,16 +288,15 @@ def generate_new_cars(cars, road, p_gen=1, speed_random=False):
 
 def main_loop(P_init=0.05, iterations=10, road_len=1000,
               Vmax1=10, Vmax2=7, Vrandom=False,
-               p_gen=0.05, reaction_time=0, p_Vrandom=0.1, 
-               Vrandom_amount=1, Vm_vary=0):
-    config.Vmax1=Vmax1
-    config.Vmax2=Vmax2
-    # check wether or not Vm_vary functionality is on, 
+              p_gen=0.05, reaction_time=0, p_Vrandom=0.1,
+              Vrandom_amount=1, Vm_vary=0):
+    config.Vmax1 = Vmax1
+    config.Vmax2 = Vmax2
+    # check wether or not Vm_vary functionality is on,
     # if not, all cars have one Vmax.
     # make the initial road and cars
-    cars, road = random_init_cars(road_len, P_init,
-                                  Vrandom)
-    
+    cars, road = random_init_cars(road_len, P_init, Vrandom)
+
     # make initial car positions
     positions = car_positions(road)
     config.plot_data = []
@@ -324,7 +321,7 @@ def main_loop(P_init=0.05, iterations=10, road_len=1000,
             # delaying each speed update with 1 reaction time.
             if i % reaction_time == 0:
                 cars = speed_update(positions, cars, road)
-                
+
     # if reaction time is zero, do the basic loop without reaction time
     # (slight code redundancy, but avoids unnecessary checks inside the loop)
     if reaction_time == 0:
@@ -339,15 +336,12 @@ def main_loop(P_init=0.05, iterations=10, road_len=1000,
                 continue
             cars = speed_update(positions, cars, road)
     return cars, road
-        
-
-
 
 
 # quick plot of the road in every timestep
 def plot_traffic():
     r1 = np.array([np.array(xi) for xi in config.plot_data])
-    r2 = np.where(r1>0, 1, r1)
-    plt.figure(figsize=(100,100))
+    r2 = np.where(r1 > 0, 1, r1)
+    plt.figure(figsize=(100, 100))
     plt.imshow(r2, cmap='binary', interpolation=None)
     plt.show()
