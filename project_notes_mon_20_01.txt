@@ -1,0 +1,13 @@
+1) all functions up to now seem bug free, no need to work further on them
+
+2) expand functionality: 2 lanes,
+			 stop signs,
+			 speed randomization, 
+			 error measurement,
+			 
+3) wesley, sebas: continue work on efficient animations
+
+4) make the mathematical model, 
+	argue analytical solutions, 
+	define hypothesis resolution criteria (i.e. error measure deltas)
+	
