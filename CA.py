@@ -5,12 +5,6 @@ import config
 from collections import defaultdict
 
 
-# return a random speed between 0 and 6 blocks per time step
-# used for initializing cars with random speeds
-def random_speed(Vmax=6):
-    return random.choice(range(Vmax))
-
-
 # subroutine for the speed_randomizer function
 # this is not necessary, but to reduce numer of code lines
 # udpates the speed for one car
@@ -68,7 +62,7 @@ def speed_randomizer(cars, p=0.1, amount=1):
 
 
 # populate the road with P_init density random cars
-def random_init_cars(road_len, P_init, speed_random=False):
+def random_init_cars(road_len, P_init):
     config.flow_counter = 0
     cars = defaultdict(int)
     # zero indicates there is no car or a non-rear part of a car
@@ -78,56 +72,29 @@ def random_init_cars(road_len, P_init, speed_random=False):
     i = 1
     # as always, check the use of Vm_vary for the two different Vmax scenario
     if config.Vm_vary != 0:
-        if speed_random:
-            while x < road_len:
-                if np.random.rand() <= P_init:
-                    # choose random speed uniformly in {0,6} range
-                    if i % config.Vm_vary == 0:
-                        # slower Vmax
-                        cars[i] = random_speed(config.Vmax2)
-                    else:
-                        # higher Vmax
-                        cars[i] = random_speed(config.Vmax1)
-                    road[x] = i
-                    x += 2
-                    i += 1
+        while x < road_len:
+            if np.random.rand() <= P_init:
+                # if not random, start all cars at Vmax
+                if i % config.Vm_vary == 0:
+                    cars[i] = config.Vmax2
                 else:
-                    x += 1
-        else:
-            while x < road_len:
-                if np.random.rand() <= P_init:
-                    # if not random, start all cars at Vmax
-                    if i % config.Vm_vary == 0:
-                        cars[i] = config.Vmax2
-                    else:
-                        cars[i] = config.Vmax1
-                    road[x] = i
-                    x += 2
-                    i += 1
-                else:
-                    x += 1
+                    cars[i] = config.Vmax1
+                road[x] = i
+                x += 2
+                i += 1
+            else:
+                x += 1
     # if not, apply the function with only Vmax1
     else:
-        if speed_random:
-            while x < road_len:
-                if np.random.rand() <= P_init:
-                    # choose random speed uniformly in {0,6} range
-                    cars[i] = speed_random(config.Vmax1)
-                    road[x] = i
-                    x += 2
-                    i += 1
-                else:
-                    x += 1
-        else:
-            while x < road_len:
-                if np.random.rand() <= P_init:
-                    # if not random, start all cars at Vmax
-                    cars[i] = config.Vmax1
-                    road[x] = i
-                    x += 2
-                    i += 1
-                else:
-                    x += 1
+        while x < road_len:
+            if np.random.rand() <= P_init:
+                # if not random, start all cars at Vmax
+                cars[i] = config.Vmax1
+                road[x] = i
+                x += 2
+                i += 1
+            else:
+                x += 1
 
     # initial amount of cars
     config.car_counter = len(cars)
@@ -155,6 +122,7 @@ def speed_update_one_car(car_pos_index, car_pos, cars, road):
     return cars
 
 
+# updates the speed of all cars
 def speed_update(car_pos, cars, road):
     l = len(car_pos)
     for pos in range(l-1):
@@ -249,7 +217,7 @@ def position_update(car_pos, cars, road):
 # Generate a new car randomly if the
 # first position of the road is free.
 # always returns the car and road array
-def generate_new_cars(cars, road, p_gen=1, speed_random=False):
+def generate_new_cars(cars, road, p_gen=1):
     if not road[0:2].any() and np.random.rand() <= p_gen:
         config.car_counter += 1
         # give the new key a new label
@@ -257,45 +225,26 @@ def generate_new_cars(cars, road, p_gen=1, speed_random=False):
         road[0] = new_car
 
         # if speed randomization is false, set speed to Vmax
-        if not speed_random:
-            # check if Vm_vary is activated
-            if config.Vm_vary != 0:
-                # slower Vmax case
-                if new_car % config.Vm_vary == 0:
-                    cars[new_car] = config.Vmax2
-                # fast Vmax case
-                else:
-                    cars[new_car] = config.Vmax1
-            # otherwise use default of Vmax1
-            else:
-                cars[new_car] = config.Vmax1
-
+        # if not speed_random:
+        # check if Vm_vary is activated
+        if config.Vm_vary != 0 and new_car % config.Vm_vary == 0:
+            cars[new_car] = config.Vmax2
+        # otherwise use default of Vmax1
         else:
-            # choose random speed uniformly
-            # again, check for Vm_vary
-            if config.Vm_vary != 0:
-                if new_car % config.Vm_vary == 0:
-                    # slow Vmax
-                    cars[new_car] = random_speed(config.Vmax2)
-                else:
-                    # fast Vmax
-                    cars[new_car] = random_speed(config.Vmax1)
-            # standard Vmax1
-            else:
-                cars[new_car] = random_speed(config.Vmax1)
+            cars[new_car] = config.Vmax1
     return cars, road
 
 
-def main_loop(P_init=0.05, iterations=10, road_len=1000,
-              Vmax1=10, Vmax2=7, Vrandom=False,
-              p_gen=0.05, reaction_time=0, p_Vrandom=0.1,
-              Vrandom_amount=1, Vm_vary=0):
+def main_loop(P_init=0.05, iterations=10, road_len=1000, Vmax1=10, Vmax2=7,
+              p_gen=0.05, reaction_time=0, p_Vrandom=0.5, Vrandom_amount=1,
+              Vm_vary=0):
     config.Vmax1 = Vmax1
     config.Vmax2 = Vmax2
+    config.Vm_vary = Vm_vary
     # check wether or not Vm_vary functionality is on,
     # if not, all cars have one Vmax.
     # make the initial road and cars
-    cars, road = random_init_cars(road_len, P_init, Vrandom)
+    cars, road = random_init_cars(road_len, P_init)
 
     # make initial car positions
     positions = car_positions(road)
@@ -309,8 +258,7 @@ def main_loop(P_init=0.05, iterations=10, road_len=1000,
             # randomize their speed, modeling driver cruise inconsistency
             cars = speed_randomizer(cars, p_Vrandom, Vrandom_amount)
             # generate randomly new cars at the beginning of the road
-            cars, road = generate_new_cars(cars, road, p_gen,
-                                           Vrandom)
+            cars, road = generate_new_cars(cars, road, p_gen)
             config.plot_data.append(np.copy(road))
             # get the new car positions from the new array
             positions = car_positions(road)
@@ -328,14 +276,37 @@ def main_loop(P_init=0.05, iterations=10, road_len=1000,
         for i in range(iterations):
             cars, road = position_update(positions, cars, road)
             cars = speed_randomizer(cars, p_Vrandom, Vrandom_amount)
-            cars, road = generate_new_cars(cars, road, p_gen,
-                                           Vrandom)
+            cars, road = generate_new_cars(cars, road, p_gen)
             config.plot_data.append(np.copy(road))
             positions = car_positions(road)
             if positions.size == 0:
                 continue
             cars = speed_update(positions, cars, road)
     return cars, road
+
+
+def run_experiment(p_init, p_gen, iters, N_rt, M, Vm_vary, plot_road=True,
+                   Vmax1=5, Vmax2=3, road_len=1000):
+    flow_data = [0]*N_rt
+    error_widths = [0]*N_rt
+    temp_data = np.array([0]*M)
+    reaction_times = np.linspace(0, M, M)
+    for i in range(N_rt):
+        for j in range(M):
+            cars, road = main_loop(P_init=p_init, iterations=iters,
+                                   road_len=road_len, Vmax1=Vmax1, Vmax2=Vmax2,
+                                   p_gen=p_gen, reaction_time=i,
+                                   Vm_vary=Vm_vary)
+            temp_data[j] = config.flow_counter
+        # add the standard deviation as error data
+        error_widths[i] = np.std(temp_data/iters)
+        # add the mean flow rates per iteration
+        flow_data[i] = np.mean(temp_data/iters)
+    fig, ax = plt.subplots()
+    ax.errorbar(reaction_times, flow_data, yerr=error_widths)
+    plt.show()
+    if plot_traffic:
+        plot_traffic()
 
 
 # quick plot of the road in every timestep

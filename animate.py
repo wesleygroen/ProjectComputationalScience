@@ -11,9 +11,9 @@ def animate_traffic(fname='animation.mp4', save=False):
     fig = plt.figure()
     cam = Camera(fig)
 
-    z = 0
+    frame = 0
     for state in config.plot_data:
-        z += 1
+        frame += 1
         plt.gca().set_xlim([0, len(state)])
         plt.gca().set_ylim([0, 2])
         plt.gca().axis('off')
