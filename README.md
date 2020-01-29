@@ -11,4 +11,4 @@ celluloid,
 FFmpeg*
 
 *can be downloaded at https://www.ffmpeg.org/ 
- it doesn't have an installed and has to be manualy added to the PATH in the OS
+ it doesn't have an installer and has to be manualy added to the PATH in the OS
