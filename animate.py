@@ -18,7 +18,7 @@ def animate_traffic(fname='animation.mp4', save=False):
         plt.gca().set_ylim([0, 2])
         plt.gca().axis('off')
         plt.gca().grid(b=None)
-        plt.text(0, 1.5, str(z))
+        plt.text(0, 1.5, str(frame))
         # draws filled block at car position and empty block at empty position
         for i in range(len(state)):
             if state[i] != 0:
