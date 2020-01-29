@@ -1,2 +1,9 @@
 python modules:
-celluloid
+numpy
+mathplotlib
+celluloid*
+
+encoder:
+FFmpeg*
+
+*only needed for animate.py
