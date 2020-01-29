@@ -2,12 +2,12 @@
  
 use main.ipynb to run the main program
 requires:
-numpy
+numpy,
 mathplotlib
 
 animate.ipynb is used to make an mp4 video visualisation
 requires:
-celluloid
+celluloid,
 FFmpeg*
 
 *can be downloaded at https://www.ffmpeg.org/ 
